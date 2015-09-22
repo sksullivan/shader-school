@@ -20,13 +20,6 @@ var comparison = compare(gl, render, render)
 var tickCount  = 0
 var numBuffers = 3
 
-require('../common')({
-    description: readme
-  , canvas: canvas
-  , compare: comparison
-  , dirname: process.env.dirname
-})
-
 window.addEventListener('resize', fit(canvas), false)
 var renderShader = createShader({
     frag: process.env.file_render_glsl
@@ -43,9 +36,53 @@ for(var i=0; i<numBuffers; ++i) {
   buffers[i] = createFBO(gl, [512,512], {float: true})
 }
 
-var t
+var t, r, g, b, r2, g2, b2
 
 function render() {
+  r,g,b = 0,0,0
+  colorStep = tickCount % (255*6)
+  if (colorStep < 255) {
+    r = 255
+    g = colorStep
+  } else if (colorStep < 255*2) {
+    r = 255-(colorStep-255)
+    g = 255
+  } else if (colorStep < 255*3) {
+    g = 255
+    b = colorStep-255*2
+  } else if (colorStep < 255*4) {
+    g = 255-(colorStep-255*3)
+    b = 255
+  } else if (colorStep < 255*5) {
+    b = 255
+    r = colorStep-255*4
+  } else {
+    b = 255-(colorStep-255*5)
+    r = 255
+  }
+
+  r2,g2,b2 = 0,0,0
+  colorStep = (tickCount-300) % (255*6)
+  if (colorStep < 255) {
+    r2 = 255
+    g2 = colorStep
+  } else if (colorStep < 255*2) {
+    r2 = 255-(colorStep-255)
+    g2 = 255
+  } else if (colorStep < 255*3) {
+    g2 = 255
+    b2 = colorStep-255*2
+  } else if (colorStep < 255*4) {
+    g2 = 255-(colorStep-255*3)
+    b2 = 255
+  } else if (colorStep < 255*5) {
+    b2 = 255
+    r2 = colorStep-255*4
+  } else {
+    b2 = 255-(colorStep-255*5)
+    r2 = 255
+  }
+
   var nshape = [canvas.height, canvas.width]
   var mousePos = [ mouse.x, canvas.height-mouse.y-1 ]
   var mouseState = [ mouseDown.left, mouseDown.middle, mouseDown.right ]
@@ -61,13 +98,15 @@ function render() {
   renderShader.uniforms.mousePosition = mousePos
   renderShader.uniforms.mouseDown = mouseState
   renderShader.uniforms.time = t
+  renderShader.uniforms.rainbowColor1 = [r/225.0,g/225.0,b/225.0] 
+  renderShader.uniforms.rainbowColor2 = [r2/225.0,g2/225.0,b2/225.0] 
 
   triangle(gl)
 
 }
 
 function update() {
-  t = 0.001 * now()
+  t = now()
 
   tickCount = tickCount + 1
   var nshape = [canvas.height, canvas.width]
